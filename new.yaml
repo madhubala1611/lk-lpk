@@ -1,0 +1,189 @@
+---
+"$schema": https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
+contentVersion: 1.0.0.0
+parameters:
+  disks_vm_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3_name:
+    defaultValue: vm_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3
+    type: String
+  virtualMachines_vm_name:
+    defaultValue: vm
+    type: String
+  networkInterfaces_vm403_name:
+    defaultValue: vm403
+    type: String
+  networkSecurityGroups_vm_nsg_name:
+    defaultValue: vm-nsg
+    type: String
+  publicIPAddresses_vm_ip_name:
+    defaultValue: vm-ip
+    type: String
+  virtualNetworks_virnet1_name:
+    defaultValue: virnet1
+    type: String
+  storageAccounts_resgrpdiag898_name:
+    defaultValue: resgrpdiag898
+    type: String
+
+variables: {}
+
+resources:
+- comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Compute/disks/vm_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3''.'
+  type: Microsoft.Compute/disks
+  name: "[parameters('disks_vm_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3_name')]"
+  apiVersion: 2016-04-30-preview
+  location: centralus
+  scale: 
+  properties:
+    accountType: Premium_LRS
+    osType: Windows
+    creationData:
+      createOption: FromImage
+      imageReference:
+        id: "/Subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/Providers/Microsoft.Compute/Locations/centralus/Publishers/MicrosoftWindowsServer/ArtifactTypes/VMImage/Offers/WindowsServer/Skus/2012-Datacenter/Versions/latest"
+    diskSizeGB: 128
+  dependsOn: []
+
+- comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Compute/virtualMachines/vm''.'
+ 
+  type: Microsoft.Compute/virtualMachines
+  name: "[parameters('virtualMachines_vm_name')]"
+  apiVersion: 2016-04-30-preview
+  location: centralus
+  scale: 
+  ft.Network/networkInterfproperties:
+    
+    hardwareProfile:
+      vmSize: Standard_DS2_v2
+   
+    storageProfile:
+      imageReference:
+        publisher: MicrosoftWindowsServer
+        offer: WindowsServer
+        sku: 2012-Datacenter
+        version: latest
+      
+      osDisk:
+        osType: Windows
+        name: "[concat(parameters('virtualMachines_vm_name'),'_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3')]"
+        createOption: FromImage
+        caching: ReadWrite
+       
+        managedDisk:
+          id: "[resourceId('Microsoft.Compute/disks', parameters('disks_vm_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3_name'))]"
+      dataDisks: []
+    
+    osProfile:
+      computerName: "[parameters('virtualMachines_vm_name')]"
+      adminUsername: madhubala
+      windowsConfiguration:
+        provisionVMAgent: true
+        enableAutomaticUpdates: true
+      secrets: []
+
+networkProfile:
+      networkInterfaces:
+      - id: "[resourceId('Microsoaces', parameters('networkInterfaces_vm403_name'))]"
+    diagnosticsProfile:
+      bootDiagnostics:
+        enabled: true
+        storageUri: "[concat('https', '://', parameters('storageAccounts_resgrpdiag898_name'),
+          '.blob.core.windows.net', '/')]"
+  dependsOn:
+  - "[resourceId('Microsoft.Compute/disks', parameters('disks_vm_OsDisk_1_b282cdc2b2dc4bf8897309908ff14ea3_name'))]"
+  - "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_vm403_name'))]"
+  - "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_resgrpdiag898_name'))]"
+- comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Network/networkInterfaces/vm403''.'
+  type: Microsoft.Network/networkInterfaces
+  name: "[parameters('networkInterfaces_vm403_name')]"
+  apiVersion: '2017-03-01'
+  location: centralus
+  scale: 
+  properties:
+    ipConfigurations:
+    - name: ipconfig1
+      properties:
+        privateIPAddress: 10.0.11.4
+        privateIPAllocationMethod: Dynamic
+        publicIPAddress:
+          id: "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_vm_ip_name'))]"
+        subnet:
+          id: "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_virnet1_name')),
+            '/subnets/subnet2')]"
+    dnsSettings:
+      dnsServers: []
+    enableIPForwarding: false
+    
+    
+    networkSecurityGroup:
+      id: "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_vm_nsg_name'))]"
+  dependsOn:
+  - "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_vm_ip_name'))]"
+  - "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_virnet1_name'))]"
+  - "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_vm_nsg_name'))]"
+- 
+comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Network/networkSecurityGroups/vm-nsg''.'
+
+type: Microsoft.Network/networkSecurityGroups
+  name: "[parameters('networkSecurityGroups_vm_nsg_name')]"
+  apiVersion: '2017-03-01'
+  location: centralus
+  scale: 
+  properties:
+    securityRules:
+    - name: default-allow-rdp
+      properties:
+        protocol: TCP
+        sourcePortRange: "*"
+        destinationPortRange: '3389'
+        sourceAddressPrefix: "*"
+        destinationAddressPrefix: "*"
+        access: Allow
+        priority: 1000
+        direction: Inbound
+  dependsOn: []
+- 
+comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Network/publicIPAddresses/vm-ip''.'
+ 
+  type: Microsoft.Network/publicIPAddresses
+  name: "[parameters('publicIPAddresses_vm_ip_name')]"
+  apiVersion: '2017-03-01'
+  location: centralus
+  scale: 
+  properties:
+    publicIPAllocationMethod: Dynamic
+    idleTimeoutInMinutes: 4
+  dependsOn: []
+-
+ comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Network/virtualNetworks/virnet1''.'
+  type: Microsoft.Network/virtualNetworks
+  name: "[parameters('virtualNetworks_virnet1_name')]"
+  apiVersion: '2017-03-01'
+  location: centralus
+  scale: 
+  properties:
+    addressSpace:
+      addressPrefixes:
+      - 10.0.0.0/16
+    subnets:
+    - name: subnet1
+      properties:
+        addressPrefix: 10.0.10.0/24
+    - name: subnet2
+      properties:
+        addressPrefix: 10.0.11.0/24
+    virtualNetworkPeerings: []
+  dependsOn: []
+-
+ comments: 'Generalized from resource: ''/subscriptions/03bdeb37-8510-4725-abed-a461de1e925d/resourceGroups/resgrp/providers/Microsoft.Storage/storageAccounts/resgrpdiag898''.'
+  type: Microsoft.Storage/storageAccounts
+  sku:
+    name: Standard_LRS
+    tier: Standard
+  kind: Storage
+  name: "[parameters('storageAccounts_resgrpdiag898_name')]"
+  apiVersion: '2016-01-01'
+  location: centralus
+  tags: {}
+  scale: 
+  properties: {}
+  dependsOn: []
